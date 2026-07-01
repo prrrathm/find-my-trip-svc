@@ -1,1 +1,11 @@
-# response DTO
+from pydantic import BaseModel
+
+
+class SearchResult(BaseModel):
+    title: str
+    url: str
+    snippet: str
+
+
+class LocationResponse(BaseModel):
+    results: list[SearchResult]

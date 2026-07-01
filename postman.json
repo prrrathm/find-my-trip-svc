@@ -1,0 +1,166 @@
+{
+  "info": {
+    "name": "Find My Trip Service",
+    "_postman_id": "find-my-trip-service-collection",
+    "description": "Agentic AI service that accepts GPS coordinates and returns curated travel results (group tours, places, activities) by running an LLM agent against a SearXNG search backend.\n\nRequests can be made directly to the service (port 8086) or through the API Gateway (port 8080) via /api/v1/find-my-trip/*.\n\nNote: responses may take several seconds as the agent performs multiple web searches.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",  "value": "http://localhost:8086", "type": "string" },
+    { "key": "gateway_url", "value": "http://localhost:8080", "type": "string" },
+    { "key": "latitude",  "value": "-8.3405",  "type": "string" },
+    { "key": "longitude", "value": "115.0920", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "description": "Returns service status.",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Location Search",
+      "description": "All endpoints accept latitude and longitude coordinates and return a list of {title, url, snippet} results from the web.",
+      "item": [
+        {
+          "name": "Find Group Tours",
+          "request": {
+            "method": "POST",
+            "description": "Find group tour packages available in the region specified by the given coordinates.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/location/group",
+              "host": ["{{base_url}}"],
+              "path": ["location", "group"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Find Places to See",
+          "request": {
+            "method": "POST",
+            "description": "Find notable places and attractions in the region specified by the given coordinates.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/location/places",
+              "host": ["{{base_url}}"],
+              "path": ["location", "places"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Find Activities",
+          "request": {
+            "method": "POST",
+            "description": "Find things to do and activities available in the region specified by the given coordinates.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/location/activities",
+              "host": ["{{base_url}}"],
+              "path": ["location", "activities"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}}\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Location Search (via Gateway)",
+      "description": "Same endpoints routed through the API Gateway. The gateway key is 'find-my-trip', so routes are /api/v1/find-my-trip/*.",
+      "item": [
+        {
+          "name": "Find Group Tours (gateway)",
+          "request": {
+            "method": "POST",
+            "description": "Find group tours via the API Gateway.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/v1/find-my-trip/location/group",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "v1", "find-my-trip", "location", "group"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Find Places to See (gateway)",
+          "request": {
+            "method": "POST",
+            "description": "Find places to see via the API Gateway.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/v1/find-my-trip/location/places",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "v1", "find-my-trip", "location", "places"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Find Activities (gateway)",
+          "request": {
+            "method": "POST",
+            "description": "Find activities via the API Gateway.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/v1/find-my-trip/location/activities",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "v1", "find-my-trip", "location", "activities"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"latitude\": {{latitude}},\n  \"longitude\": {{longitude}}\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

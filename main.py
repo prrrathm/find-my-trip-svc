@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from internal.router.router import router
 
-@app.get("/")
-def read_root():
-	return {"status":"ok"}
+app = FastAPI(title="Find My Trip")
+app.include_router(router)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
