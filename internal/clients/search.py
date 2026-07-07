@@ -1,31 +1,50 @@
-# SearXNG / Tavily / Brave behind one interface
-import httpx
-import json
-from internal.core.config import settings
+import primp
+from bs4 import BeautifulSoup
 
-# TODO - infer the search service using a parameter
+_BING_URL = "https://www.bing.com/search"
+
+
 class Search:
-
-    def __init__(self):
-        self.search_xng_url = settings.search_xng_url
-
-    async def SearchXNG(self, search_string, max_results=10):
-        search_url = self.search_xng_url + "/search?q=" + search_string + "&format=json"
-        async with httpx.AsyncClient() as client:
-            response = await client.get(search_url)
+    @staticmethod
+    async def SearchXNG(query, max_results=10, **kwargs):
+        params = {"q": query}
+        async with primp.AsyncClient(
+            impersonate="chrome_131", follow_redirects=True
+        ) as client:
+            response = await client.get(_BING_URL, params=params, timeout=15)
             response.raise_for_status()
-            results = response.json().get("results", [])
-        return [
-            {"title": x.get("title"), "url": x.get("url"), "content": x.get("content")}
-            for x in results[:max_results]
-        ]
 
+        soup = BeautifulSoup(response.text, "html.parser")
+        results = []
+        for item in soup.select("li.b_algo"):
+            if len(results) >= max_results:
+                break
+            title_el = item.find("h2")
+            if not title_el:
+                continue
+            a_el = title_el.find("a")
+            if not a_el:
+                continue
+            title = a_el.get_text(strip=True)
+            href = a_el.get("href", "")
+            if not title or not href:
+                continue
+
+            caption = item.find("div", class_="b_caption")
+            snippet = ""
+            if caption:
+                p = caption.find("p")
+                if p:
+                    snippet = p.get_text(strip=True)
+
+            results.append({
+                "title": title,
+                "url": href,
+                "content": snippet,
+            })
+
+        return results
 
 
 search = Search()
 web_search = search.SearchXNG
-
-# * testing search results
-# import asyncio
-# result = search.SearchXNG("bali tour packages", 20)
-# print(asyncio.run(search.SearchXNG("bali tour packages", 20)))
