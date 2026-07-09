@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     agent_model: str = "llama3.2"
     brave_api_key: str = ""
     tavily_api_key: str = ""
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()  # type: ignore

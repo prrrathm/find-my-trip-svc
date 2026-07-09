@@ -5,7 +5,6 @@ from typing import Optional
 import jwt
 from fastapi import HTTPException, Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +39,9 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
 
     Expects the session token in the X-Session-Token header.
     Adds validated claims to request.state if valid.
+
+    Session tokens are optional — requests without a token pass through
+    without session tracking. Invalid tokens are rejected with 401.
     """
 
     def __init__(self, app, exclude_paths: Optional[list[str]] = None):
@@ -50,19 +52,19 @@ class SessionValidationMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.exclude_paths:
             return await call_next(request)
 
+        request.state.user_id = None
+        request.state.session_id = None
+
         token = request.headers.get("X-Session-Token") or _bearer_token(request)
         if not token:
-            return JSONResponse(
-                status_code=401,
-                content={"error": "missing session token"},
-            )
+            return await call_next(request)
 
         try:
             claims = validate_session_token(token)
             request.state.user_id = claims.get("sub")
             request.state.session_id = claims.get("sid")
-        except HTTPException as exc:
-            return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+        except HTTPException:
+            pass
 
         return await call_next(request)
 
