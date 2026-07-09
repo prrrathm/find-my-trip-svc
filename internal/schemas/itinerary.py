@@ -9,3 +9,5 @@ class SearchResult(BaseModel):
 
 class LocationResponse(BaseModel):
     results: list[SearchResult]
+    travel_blocked: bool = False
+    travel_message: str | None = None
